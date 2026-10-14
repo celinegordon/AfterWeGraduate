@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
+import { allCities } from "./data/places"
+import { categories } from "./data/organizations"
+import { organizations, reachFor, resolvePlace } from "./data/directory"
+import type { Organization, Reach } from "./data/directory"
 
 function Icon({
   name,
@@ -113,153 +117,6 @@ const photos = {
   beach:
     "https://images.unsplash.com/photo-1517840933437-c41356892b35?auto=format&fit=crop&w=600&q=85",
 }
-const cities = [
-  "Atlanta, GA",
-  "New York, NY",
-  "Washington, DC",
-  "Chicago, IL",
-  "Houston, TX",
-  "Los Angeles, CA",
-]
-type Organization = {
-  id: string
-  name: string
-  category: string
-  icon: string
-  color: string
-  tagline: string
-  description: string
-  url: string
-  instagram?: string
-  tags: string[]
-}
-
-const organizations: Organization[] = [
-  {
-    id: "blackontheblock",
-    name: "Black on the Block",
-    category: "Social & gatherings",
-    icon: "people",
-    color: "pink",
-    tagline: "Come for the culture. Stay for the connections.",
-    description:
-      "Discover pop-up markets celebrating Black-owned businesses, food, music, and community. Check their Instagram for upcoming cities, event announcements, and ticket details.",
-    url: "https://www.instagram.com/blackontheblock/",
-    instagram: "https://www.instagram.com/blackontheblock/",
-    tags: ["All genders", "Pop-up markets", "Social gatherings"],
-  },
-  {
-    id: "gatheringspot",
-    name: "The Gathering Spot",
-    category: "Social & gatherings",
-    icon: "people",
-    color: "butter",
-    tagline: "A gathering place for your next great connection.",
-    description:
-      "A private membership community rooted in Black culture, with clubs in Atlanta, Washington, DC, and Los Angeles. Explore conversations, cultural programming, and social events; check membership fees and access directly.",
-    url: "https://thegatheringspot.club/",
-    tags: ["All genders", "Member community", "Culture & connection"],
-  },
-  {
-    id: "outdoorafro",
-    name: "Outdoor Afro",
-    category: "Outdoors & wellness",
-    icon: "sun",
-    color: "sage",
-    tagline: "Fresh air. Familiar faces. New adventures.",
-    description:
-      "A national network celebrating Black connections to nature. Explore their local networks for group hikes, outdoor experiences, and opportunities to connect; confirm current activities with your local network.",
-    url: "https://outdoorafro.org/",
-    instagram: "https://www.instagram.com/outdoorafro/",
-    tags: ["All genders", "Outdoor adventures", "Local networks"],
-  },
-  {
-    id: "mahoganybooks",
-    name: "MahoganyBooks",
-    category: "Books & culture",
-    icon: "book",
-    color: "lavender",
-    tagline: "Black stories. Big conversations. Your kind of company.",
-    description:
-      "A Black-owned bookstore in the Washington, DC area celebrating books by and about the African diaspora. Explore author talks, literary conversations, and community events; check each event’s location and registration details.",
-    url: "https://www.mahoganybooks.com/",
-    instagram: "https://www.instagram.com/mahoganybooks/",
-    tags: ["All genders", "Literary events", "DC area"],
-  },
-  {
-    id: "girltrek",
-    name: "GirlTrek",
-    category: "Outdoors & wellness",
-    icon: "sun",
-    color: "peach",
-    tagline: "A little fresh air. A whole lot of sisterhood.",
-    description:
-      "A national movement of Black women walking together for health, joy, and connection. Explore their community to find a walking crew or start your own.",
-    url: "https://www.girltrek.org/",
-    tags: ["Black women-centered", "Walking groups", "Wellness"],
-  },
-  {
-    id: "bgr",
-    name: "Black Girls RUN!",
-    category: "Outdoors & wellness",
-    icon: "sun",
-    color: "sage",
-    tagline: "Your next running buddy is out there.",
-    description:
-      "Connect with a national community making fitness welcoming for Black women. Their group directory is the place to check for local runs and meetups.",
-    url: "https://blackgirlsrun.com/",
-    tags: ["Black women-centered", "Running", "All levels"],
-  },
-  {
-    id: "wrbg",
-    name: "Well-Read Black Girl",
-    category: "Books & culture",
-    icon: "book",
-    color: "lavender",
-    tagline: "Good books. Even better conversations.",
-    description:
-      "Celebrate Black women writers and readers through a community rooted in storytelling. Explore their book club network, reading recommendations, and cultural gatherings.",
-    url: "https://www.wellreadblackgirl.com/",
-    tags: ["Black women-centered", "Book clubs", "Culture"],
-  },
-  {
-    id: "nulyp",
-    name: "Urban League Young Professionals",
-    category: "Career & connection",
-    icon: "people",
-    color: "butter",
-    tagline: "Grow your circle. Make your impact.",
-    description:
-      "A national network for young Black professionals, with local chapters offering networking, service, and community-building opportunities. Open to all genders.",
-    url: "https://nulyp.org/",
-    tags: ["All genders", "Young professionals", "Networking"],
-  },
-  {
-    id: "bwo",
-    name: "Black Women’s Health Imperative",
-    category: "Outdoors & wellness",
-    icon: "heart",
-    color: "pink",
-    tagline: "Make space for your well-being.",
-    description:
-      "Explore programs and resources centered on the health and well-being of Black women and girls. Check their site for current programs and ways to get involved.",
-    url: "https://bwhi.org/",
-    tags: ["Black women-centered", "Well-being", "Advocacy"],
-  },
-  {
-    id: "nc",
-    name: "National Council of Negro Women",
-    category: "Service & community",
-    icon: "people",
-    color: "lavender",
-    tagline: "Sisterhood with a sense of purpose.",
-    description:
-      "Find a local section of this longstanding network connecting Black women through leadership, advocacy, education, and service. Check membership details with your local section.",
-    url: "https://ncnw.org/",
-    tags: ["Black women-centered", "Local sections", "Service"],
-  },
-]
-
 export default function App() {
   const [page, setPage] = useState<"home" | "results" | "saved">("home")
   const [location, setLocation] = useState("")
@@ -297,13 +154,9 @@ export default function App() {
       inputRef.current?.focus()
       return
     }
-    const known = cities.find(
-      (c) =>
-        c.toLowerCase().split(",")[0] === value.toLowerCase() ||
-        c.toLowerCase() === value.toLowerCase(),
-    )
-    setCity(known || value)
-    setLocation(known || value)
+    const place = resolvePlace(value)
+    setCity(place.label)
+    setLocation(place.label)
     setError("")
     navigate("results")
   }
@@ -331,11 +184,35 @@ export default function App() {
       100,
     )
   }
-  const visible = organizations.filter(
-    (org) =>
-      (page !== "saved" || saved.includes(org.id)) &&
-      (category === "All communities" || org.category === category),
+  const place = resolvePlace(city)
+  const reachOrder: Reach[] = ["local", "statewide", "nationwide"]
+  const placed = organizations
+    .map((org) => ({
+      org,
+      reach: page === "saved" ? null : reachFor(org, place),
+    }))
+    .filter(({ org, reach }) =>
+      page === "saved" ? saved.includes(org.id) : reach !== null,
+    )
+    .sort(
+      (a, b) =>
+        reachOrder.indexOf(a.reach as Reach) -
+        reachOrder.indexOf(b.reach as Reach),
+    )
+  const visible = placed.filter(
+    ({ org }) => category === "All communities" || org.category === category,
   )
+  const hasLocal = placed.some(({ reach }) => reach !== "nationwide")
+  const reachLabel = (reach: Reach | null) =>
+    reach === "local"
+      ? place.city
+        ? `In ${place.city.split(",")[0]}`
+        : `In ${place.label}`
+      : reach === "statewide"
+        ? `Across ${place.state?.name}`
+        : reach === "nationwide"
+          ? "Nationwide"
+          : ""
 
   return (
     <div className="app-shell">
@@ -689,17 +566,22 @@ export default function App() {
                   {city === "Your city" ? "you" : city} directly.
                 </p>
               </div>
+              {!hasLocal && (
+                <div className="directory-note">
+                  <Icon name="sparkle" size={20} />
+                  <p>
+                    <strong>
+                      We’re still gathering local groups for {city}.
+                    </strong>{" "}
+                    In the meantime, these nationwide communities have chapters
+                    and events across the country.
+                  </p>
+                </div>
+              )}
             </>
           )}
           <div className="filter-row" aria-label="Filter by interest">
-            {[
-              "All communities",
-              "Social & gatherings",
-              "Outdoors & wellness",
-              "Books & culture",
-              "Career & connection",
-              "Service & community",
-            ].map((c) => (
+            {["All communities", ...categories].map((c) => (
               <button
                 className={category === c ? "filter active" : "filter"}
                 key={c}
@@ -716,7 +598,7 @@ export default function App() {
             <span>Find the spaces that feel like you.</span>
           </div>
           <div className="organization-grid">
-            {visible.map((org) => (
+            {visible.map(({ org, reach }) => (
               <article className="organization-card" key={org.id}>
                 <div className={`org-cover ${org.color}`}>
                   <Icon name={org.icon} size={42} />
@@ -741,6 +623,7 @@ export default function App() {
                   <p className="org-tagline">{org.tagline}</p>
                   <p className="org-description">{org.description}</p>
                   <div className="org-tags">
+                    {reach && <span>{reachLabel(reach)}</span>}
                     {org.tags.map((tag) => (
                       <span key={tag}>{tag}</span>
                     ))}
@@ -793,7 +676,7 @@ export default function App() {
         <span>Made with care, for us.</span>
       </footer>
       <datalist id="city-options">
-        {cities.map((c) => (
+        {allCities.map((c) => (
           <option key={c} value={c} />
         ))}
       </datalist>

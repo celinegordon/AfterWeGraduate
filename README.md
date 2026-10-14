@@ -23,7 +23,25 @@ This first commit is the front-end prototype, built in Figma Make:
 - **My saved:** heart any organization to save it; the list is stored in your browser (`localStorage`) and never sent anywhere
 - **Responsive layout:** works on desktop, tablet, and phone
 
-Organization data currently lives in `src/App.tsx`. It moves into the database in the next milestone.
+Organization data lives in `src/data/organizations.ts` (see **Curating the directory** below). It moves into the database in a later milestone.
+
+## Curating the directory
+
+All the groups are hand-picked. To add one, open `src/data/organizations.ts` and copy the template at the bottom:
+
+```ts
+{
+  name: "Group name",
+  instagram: "theirhandle",       // or the full instagram.com link
+  where: ["Atlanta, GA"],         // or ["GA"] for the whole state, or "nationwide"
+  category: "Social & gatherings",
+},
+```
+
+- **Instagram:** paste the handle or the full link; the app builds the link for you.
+- **Where:** a group listed for a city shows up when someone searches that city *or* its state. A state code (`"GA"`) shows it for every city in that state. `"nationwide"` shows it everywhere.
+- **Cities and states:** every state plus DC and its major cities are listed in `src/data/places.ts`. City names in `where` must match that file exactly (`"City, ST"`). Add a city there to make it searchable.
+- Results are ordered local first, then statewide, then nationwide. A city with no local groups yet gets a short "still gathering" note above the nationwide ones.
 
 ## Tech stack
 
@@ -58,7 +76,8 @@ Other scripts:
 ```
 index.html        Vite HTML shell with the #root element
 src/main.tsx      React entry point; loads index.css and mounts App
-src/App.tsx       All pages, components, and the organization data
+src/App.tsx       All pages and components
+src/data/         Curated organizations, states and cities, and search matching
 src/index.css     Global styles, fonts, and the Tailwind import
 vite.config.ts    Vite config (React, Tailwind, Figma Make plugins, @ alias)
 package.json      Dependencies and scripts
