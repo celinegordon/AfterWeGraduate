@@ -34,6 +34,10 @@ react(),
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      // In dev, send /messages to the Express server (pnpm server)
+      proxy: {
+        '/messages': `http://localhost:${process.env.API_PORT || 5000}`,
+      },
       watch: {
         ignored: [
           '**/.figma/**',

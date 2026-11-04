@@ -4,6 +4,7 @@ import { allCities } from "./data/places"
 import { categories } from "./data/organizations"
 import { organizations, reachFor, resolvePlace } from "./data/directory"
 import type { Organization, Reach } from "./data/directory"
+import MessageBoard from "./MessageBoard"
 
 function Icon({
   name,
@@ -118,7 +119,7 @@ const photos = {
     "https://images.unsplash.com/photo-1517840933437-c41356892b35?auto=format&fit=crop&w=600&q=85",
 }
 export default function App() {
-  const [page, setPage] = useState<"home" | "results" | "saved">("home")
+  const [page, setPage] = useState<"home" | "results" | "saved" | "board">("home")
   const [location, setLocation] = useState("")
   const [city, setCity] = useState("")
   const [category, setCategory] = useState("All communities")
@@ -230,6 +231,12 @@ export default function App() {
         <nav aria-label="Main navigation">
           <button onClick={howItWorks}>How it works</button>
           <button onClick={() => setAbout(true)}>Our why</button>
+          <button
+            onClick={() => navigate("board")}
+            className={page === "board" ? "nav-active" : ""}
+          >
+            Community board
+          </button>
           <button
             onClick={() => navigate("saved")}
             className={page === "saved" ? "nav-active" : ""}
@@ -504,6 +511,8 @@ export default function App() {
             </button>
           </section>
         </main>
+      ) : page === "board" ? (
+        <MessageBoard onBack={() => navigate("home")} />
       ) : (
         <main className="results-main section-wrap">
           <button className="back-link" onClick={() => navigate("home")}>

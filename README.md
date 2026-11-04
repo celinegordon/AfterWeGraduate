@@ -48,9 +48,9 @@ All the groups are hand-picked. To add one, open `src/data/organizations.ts` and
 | Layer | Now | Planned |
 | --- | --- | --- |
 | Frontend | React 19, Vite 8, Tailwind CSS v4, TypeScript | Same |
-| Backend | None | Node.js + Express JSON API |
-| Database | None (data hard-coded) | Supabase (PostgreSQL) |
-| Hosting | Figma Make preview | Vercel (frontend), Render (API) |
+| Backend | Node.js + Express (`server/server.js`) | More routes (organizations, suggestions) |
+| Database | Supabase (PostgreSQL), `messages` table | Organizations move in too |
+| Hosting | Render (one web service: Express serves the built site) | Same |
 
 ## Getting started
 
@@ -63,12 +63,47 @@ pnpm dev
 
 Then open the URL Vite prints (default port 8443, or `$PORT` if set).
 
+### Community board (Express + Supabase)
+
+The Community board page needs the API server and a Supabase project.
+
+1. In Supabase, open **Table Editor** and create a table called `messages`: keep the default `id` (int8) and `created_at` (timestamptz, default `now()`), and add `name` (text) and `text` (text). Leave Row Level Security on; the server's secret key can still read and write.
+2. Copy `.env.example` to `.env` and fill in your project URL and secret key. `.env` is git-ignored. **Never commit it.**
+3. Run the API and the site in two terminals:
+
+```bash
+pnpm server   # Express API on http://localhost:5000
+pnpm dev      # Vite site; /messages is proxied to the API
+```
+
+API routes:
+
+| Request | What it does |
+| --- | --- |
+| `GET /messages` | Returns the 20 newest messages |
+| `POST /messages` | Body `{ name, text }`; saves a message. Empty text gets a 400 |
+
+### Deploy on Render
+
+New → Web Service → this repo, then:
+
+| Setting | Value |
+| --- | --- |
+| Branch | `main` |
+| Runtime | Node |
+| Build Command | `npm install && npm run build` |
+| Start Command | `npm start` |
+| Instance Type | Free |
+| Environment Variables | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (do not set `PORT`) |
+
 Other scripts:
 
 | Command | What it does |
 | --- | --- |
 | `pnpm build` | Production build into `dist/` |
 | `pnpm preview` | Serve the production build locally |
+| `pnpm server` | Run the Express API (restarts on save) |
+| `pnpm start` | Run the Express API and serve `dist/` (used by Render) |
 | `pnpm format` | Format code with oxfmt |
 
 ## Project structure
@@ -77,6 +112,9 @@ Other scripts:
 index.html        Vite HTML shell with the #root element
 src/main.tsx      React entry point; loads index.css and mounts App
 src/App.tsx       All pages and components
+src/MessageBoard.tsx  Community board page
+server/server.js  Express API: /messages routes + serves dist/
+.env.example      Template for your Supabase keys (copy to .env)
 src/data/         Curated organizations, states and cities, and search matching
 src/index.css     Global styles, fonts, and the Tailwind import
 vite.config.ts    Vite config (React, Tailwind, Figma Make plugins, @ alias)
