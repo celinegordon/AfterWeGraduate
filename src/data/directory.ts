@@ -19,7 +19,7 @@ export type Organization = {
   where: OrganizationEntry["where"]
 }
 
-const categoryStyle: Record<Category, { icon: string color: string }> = {
+const categoryStyle: Record<Category, { icon: string; color: string }> = {
   "Social & gatherings": { icon: "people", color: "pink" },
   "Outdoors & wellness": { icon: "sun", color: "sage" },
   "Books & culture": { icon: "book", color: "lavender" },
@@ -78,7 +78,7 @@ const preferredState: Record<string, string> = {
   columbia: "SC",
 }
 
-export type Place = { label: string city?: string state?: State }
+export type Place = { label: string; city?: string; state?: State }
 
 // Turns whatever the user typed into a known city and/or state.
 export function resolvePlace(input: string): Place {
